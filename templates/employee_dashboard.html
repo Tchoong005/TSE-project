@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="layout">
+    <div class="sidebar">
+        <h2>EAS System</h2>
+        <a href="/employee">Dashboard</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <h1>Employee Dashboard</h1>
+            <p>View your attendance performance.</p>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Total Attendance Days</h3>
+                <p>{{ total_days }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Present Days</h3>
+                <p>{{ present_days }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Attendance Percentage</h3>
+                <p>{{ attendance_percentage }}%</p>
+            </div>
+        </div>
+
+        <div class="table-box">
+            <h2>My Attendance History</h2>
+
+            <table>
+                <tr>
+                    <th>Date</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                </tr>
+
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.date }}</td>
+                    <td>{{ record.check_in }}</td>
+                    <td>{{ record.check_out }}</td>
+                    <td>{{ record.status }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

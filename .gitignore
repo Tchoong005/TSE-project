@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+attendance_report.csv
+*.db-journal*
+*.bak

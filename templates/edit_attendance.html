@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Attendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="layout">
+    <div class="sidebar">
+        <h2>EAS System</h2>
+        <a href="/hr">Dashboard</a>
+        <a href="/attendance_records">Attendance Records</a>
+        <a href="/generate_report">Generate Report</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <h1>Edit Attendance Record</h1>
+            <p>Correct attendance records when system errors occur.</p>
+        </div>
+
+        <div class="form-box">
+            <p><strong>Employee:</strong> {{ record.full_name }}</p>
+            <p><strong>Date:</strong> {{ record.date }}</p>
+
+            <form method="POST">
+                <label>Check In</label>
+                <input type="text" name="check_in" value="{{ record.check_in }}">
+
+                <label>Check Out</label>
+                <input type="text" name="check_out" value="{{ record.check_out }}">
+
+                <label>Status</label>
+                <select name="status">
+                    <option value="Present" {% if record.status == "Present" %}selected{% endif %}>Present</option>
+                    <option value="Late" {% if record.status == "Late" %}selected{% endif %}>Late</option>
+                    <option value="Absent" {% if record.status == "Absent" %}selected{% endif %}>Absent</option>
+                </select>
+
+                <label>Edit Reason</label>
+                <input type="text" name="reason" value="{{ record.edit_reason }}" required>
+
+                <button type="submit">Update Attendance</button>
+                <a class="btn btn-danger" href="/attendance_records">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

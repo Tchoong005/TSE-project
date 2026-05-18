@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="kiosk-body">
+
+<div class="kiosk-card">
+    <div class="kiosk-header">
+        <h1>Employee Attendance System</h1>
+        <a class="kiosk-login" href="/login">Login</a>
+    </div>
+
+    <div class="camera-box">
+        <video id="camera" autoplay playsinline></video>
+        <canvas id="snapshot" hidden></canvas>
+    </div>
+
+    <div id="message" class="kiosk-message">
+        Allow camera access, then choose check in or check out.
+    </div>
+
+    <div class="kiosk-actions">
+        <button id="checkInBtn" class="btn btn-success kiosk-button" type="button">
+            Face Check In
+        </button>
+        <button id="checkOutBtn" class="btn btn-warning kiosk-button" type="button">
+            Face Check Out
+        </button>
+    </div>
+</div>
+
+<script>
+    const video = document.getElementById("camera");
+    const canvas = document.getElementById("snapshot");
+    const messageBox = document.getElementById("message");
+    const checkInBtn = document.getElementById("checkInBtn");
+    const checkOutBtn = document.getElementById("checkOutBtn");
+
+    function showMessage(text, success) {
+        messageBox.textContent = text;
+        messageBox.className = success ? "kiosk-message success" : "kiosk-message error";
+    }
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            video.srcObject = stream;
+        } catch (error) {
+            showMessage("Unable to access camera. Please allow camera permission.", false);
+            checkInBtn.disabled = true;
+            checkOutBtn.disabled = true;
+        }
+    }
+
+    function captureFrame() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext("2d");
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL("image/jpeg", 0.9);
+    }
+
+    async function submitAttendance(endpoint) {
+        if (!video.videoWidth || !video.videoHeight) {
+            showMessage("Camera is not ready yet. Please wait a moment.", false);
+            return;
+        }
+
+        checkInBtn.disabled = true;
+        checkOutBtn.disabled = true;
+        showMessage("Scanning face...", true);
+
+        try {
+            const image = captureFrame();
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ image }),
+            });
+
+            const result = await response.json();
+            const name = result.employee_name ? ` (${result.employee_name})` : "";
+            showMessage(`${result.message}${name}`, result.success);
+        } catch (error) {
+            showMessage("Attendance scan failed. Please try again.", false);
+        } finally {
+            checkInBtn.disabled = false;
+            checkOutBtn.disabled = false;
+        }
+    }
+
+    checkInBtn.addEventListener("click", () => submitAttendance("/api/kiosk_check_in"));
+    checkOutBtn.addEventListener("click", () => submitAttendance("/api/kiosk_check_out"));
+    startCamera();
+</script>
+
+</body>
+</html>

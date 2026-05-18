@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="layout">
+    <div class="sidebar">
+        <h2>EAS System</h2>
+        <a href="/hr">Dashboard</a>
+        <a href="/attendance_records">Attendance Records</a>
+        <a href="/face_registration">Face Registration</a>
+        <a href="/generate_report">Generate Report</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <h1>Face Registration</h1>
+            <p>Register or re-register facial profiles for HR and Employee users.</p>
+        </div>
+
+        <div class="table-box">
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                </tr>
+
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>
+                        <a class="btn btn-success" href="/register_face/{{ user.id }}">Register Face</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
