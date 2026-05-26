@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/kiosk.css') }}">
+</head>
+<body class="kiosk-body">
+
+<main class="kiosk-shell">
+    <section class="kiosk-card">
+        <div class="kiosk-header">
+            <div>
+                <h1>Employee Attendance System</h1>
+                <p>Automatic face attendance kiosk</p>
+            </div>
+            <a class="kiosk-login" href="/login">Login</a>
+        </div>
+
+        <div class="schedule-strip">
+            <div>
+                <span>Start Work</span>
+                <strong>{{ schedule.start_time }}</strong>
+            </div>
+            <div>
+                <span>End Work</span>
+                <strong>{{ schedule.end_time }}</strong>
+            </div>
+            <div>
+                <span>Mode</span>
+                <strong>Auto</strong>
+            </div>
+        </div>
+
+        <div class="camera-box">
+            <video id="camera" autoplay playsinline></video>
+            <canvas id="snapshot" hidden></canvas>
+            <div class="face-frame" aria-hidden="true"></div>
+            <div id="modeBadge" class="mode-badge">Auto scanning</div>
+        </div>
+
+        <div id="message" class="kiosk-message">
+            Allow camera access. The system will scan automatically.
+        </div>
+    </section>
+</main>
+
+<script src="{{ url_for('static', filename='js/kiosk_camera.js') }}"></script>
+
+</body>
+</html>

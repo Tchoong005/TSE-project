@@ -8,7 +8,9 @@ import face_recognition
 import numpy as np
 
 from config import FACE_FOLDER
-from database import create_face_profile, get_user_by_id, get_users_by_roles
+from database import create_face_profile, get_latest_face_profiles_by_user, get_user_by_id, get_users_by_roles
+
+FACE_MATCH_TOLERANCE = 0.6
 
 
 def ensure_face_folder():
@@ -104,6 +106,9 @@ def match_registered_face_from_image_data(image_data):
         return None, message
 
     users = get_users_by_roles(["hr", "employee"])
+    best_match = None
+    best_distance = None
+    registered_count = 0
 
     for user in users:
         face_path = os.path.join(FACE_FOLDER, f"{user['id']}.pkl")
@@ -111,19 +116,44 @@ def match_registered_face_from_image_data(image_data):
         if not os.path.exists(face_path):
             continue
 
+        registered_count += 1
+
         with open(face_path, "rb") as f:
             registered_encoding = pickle.load(f)
 
-        results = face_recognition.compare_faces(
+        distance = face_recognition.face_distance(
             [registered_encoding],
-            current_encoding,
-            tolerance=0.5
-        )
+            current_encoding
+        )[0]
 
-        if results[0]:
-            return user, "Face verified successfully"
+        if best_distance is None or distance < best_distance:
+            best_distance = distance
+            best_match = user
 
-    return None, "Face verification failed"
+    if registered_count == 0:
+        return None, "No registered face profiles found"
+
+    if best_match and best_distance <= FACE_MATCH_TOLERANCE:
+        return best_match, "Face verified successfully"
+
+    return None, "Face not recognised"
+
+
+def user_has_face_profile(user_id):
+    face_path = os.path.join(FACE_FOLDER, f"{user_id}.pkl")
+    return os.path.exists(face_path)
+
+
+def attach_face_registration_status(users):
+    latest_profiles = get_latest_face_profiles_by_user()
+    enriched_users = []
+
+    for user in users:
+        row = dict(user)
+        row["face_registered"] = user_has_face_profile(user["id"]) or user["id"] in latest_profiles
+        enriched_users.append(row)
+
+    return enriched_users
 
 
 def register_face(user_id, registered_by):
@@ -174,3 +204,27 @@ def register_face(user_id, registered_by):
     cap.release()
     cv2.destroyAllWindows()
     return False, "Face registration cancelled"
+
+
+def register_face_from_image_data(user_id, image_data, registered_by):
+    ensure_face_folder()
+    user = get_user_by_id(user_id)
+
+    if not user:
+        return False, "User not found"
+
+    if user["role"] == "superadmin":
+        return False, "Super Admin does not need face registration"
+
+    encoding, message = get_face_encoding_from_image_data(image_data)
+
+    if encoding is None:
+        return False, message
+
+    filename = os.path.join(FACE_FOLDER, f"{user_id}.pkl")
+
+    with open(filename, "wb") as f:
+        pickle.dump(encoding, f)
+
+    create_face_profile(user_id, filename, registered_by)
+    return True, "Face registered successfully"

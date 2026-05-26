@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <h1>Employee Management</h1>
+            <p>Manage employee accounts, roles, employment details, and account status.</p>
+            <a class="btn" href="/add_employee">Add New Employee</a>
+        </div>
+
+        <div class="table-box">
+            <table>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Joined Year</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Deleted At</th>
+                    <th>Action</th>
+                </tr>
+
+                {% for user in users %}
+                {% set role_label = "Super Admin" if user.role == "superadmin" else ("HR Staff" if user.role == "hr" else "Employee") %}
+                <tr class="{{ 'is-deleted-row' if user.status == 'Deleted' or user.deleted_at else '' }}">
+                    <td>{{ user.system_id }}</td>
+                    <td>{{ user.joined_year }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.department }}</td>
+                    <td>{{ user.position }}</td>
+                    <td>{{ role_label }}</td>
+                    <td>
+                        <span class="status-pill {{ 'status-deleted' if user.status == 'Deleted' or user.deleted_at else 'status-active' }}">
+                            {{ user.status }}
+                        </span>
+                    </td>
+                    <td>{{ user.deleted_at or "-" }}</td>
+                    <td>
+                        {% if user.status == "Deleted" or user.deleted_at %}
+                        {% if can_delete %}
+                        <form class="inline-action" method="POST" action="{{ url_for('superadmin.restore_employee_route', id=user.id) }}">
+                            <button class="btn btn-warning" type="submit" onclick="return confirm('Restore this employee account?')">Restore</button>
+                        </form>
+                        {% else %}
+                        <span class="muted-action">View only</span>
+                        {% endif %}
+                        {% elif user.role != "superadmin" %}
+                        <a class="btn" href="/edit_employee/{{ user.id }}">Edit</a>
+                        {% if can_delete %}
+                        <a class="btn btn-danger" href="/delete_employee/{{ user.id }}" onclick="return confirm('Soft delete this employee account? The account will remain visible but cannot login.')">Delete</a>
+                        {% endif %}
+                        {% else %}
+                        <span class="muted-action">Protected</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

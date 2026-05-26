@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <h1>{{ page_title or "Face Registration" }}</h1>
+            <p>{{ page_subtitle or "Register or re-register facial profiles in the website for HR and Employee users." }}</p>
+        </div>
+
+        <div class="table-box">
+            <table>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Face Status</th>
+                    <th>Action</th>
+                </tr>
+
+                {% for user in users %}
+                {% set role_label = "HR Staff" if user.role == "hr" else "Employee" %}
+                <tr>
+                    <td>{{ user.system_id }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ role_label }}</td>
+                    <td>
+                        <span class="status-pill {{ 'status-active' if user.face_registered else 'status-pending' }}">
+                            {{ "Registered" if user.face_registered else "Not Registered" }}
+                        </span>
+                    </td>
+                    <td>
+                        <a class="btn btn-success" href="/register_face/{{ user.id }}">{{ "Re-register" if user.face_registered else "Open Camera" }}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

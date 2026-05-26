@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile - EAS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        {% set role_label = "Super Admin" if user.role == "superadmin" else ("HR Staff" if user.role == "hr" else "Employee") %}
+        {% set profile_photo = url_for('static', filename=user.profile_image) if user.profile_image else url_for('static', filename='images/bilobali_logo.png') %}
+
+        <section class="profile-hero">
+            <div class="profile-identity">
+                <img src="{{ profile_photo }}" alt="Profile photo">
+                <div>
+                    <span class="profile-eyebrow">{{ role_label }}</span>
+                    <h1>{{ user.full_name or "User Profile" }}</h1>
+                    <p>{{ user.system_id or "-" }}</p>
+                </div>
+            </div>
+            <div class="profile-quick">
+                <div><span>Status</span><strong>{{ user.status or "Active" }}</strong></div>
+                <div><span>Joined</span><strong>{{ user.joined_year or "-" }}</strong></div>
+            </div>
+        </section>
+
+        <div class="profile-layout">
+            <section class="profile-card profile-photo-card">
+                <h2>Profile Photo</h2>
+                <p>Upload a square photo for the sidebar and account profile.</p>
+                <form method="POST" enctype="multipart/form-data">
+                    <label class="file-drop">
+                        <input type="file" name="profile_image" accept="image/png,image/jpeg,image/webp" required>
+                        <span>Choose Photo</span>
+                        <small>PNG, JPG, or WEBP</small>
+                    </label>
+                    <button type="submit">Upload Photo</button>
+                </form>
+            </section>
+
+            <section class="profile-card profile-details-card">
+                <div class="section-heading">
+                    <h2>Account Details</h2>
+                </div>
+                <div class="profile-detail-list">
+                    <div><span>System ID</span><strong>{{ user.system_id or "-" }}</strong></div>
+                    <div><span>Email</span><strong>{{ user.email or "-" }}</strong></div>
+                    <div><span>Role</span><strong>{{ role_label }}</strong></div>
+                </div>
+            </section>
+
+            <section class="profile-card profile-details-card profile-wide-card">
+                <div class="section-heading">
+                    <h2>Employment Details</h2>
+                </div>
+                <div class="profile-grid">
+                    <div><span>Department</span><strong>{{ user.department or "-" }}</strong></div>
+                    <div><span>Position</span><strong>{{ user.position or "-" }}</strong></div>
+                    <div><span>Joined Year</span><strong>{{ user.joined_year or "-" }}</strong></div>
+                    <div><span>Account Status</span><strong>{{ user.status or "Active" }}</strong></div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

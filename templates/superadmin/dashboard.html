@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Super Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <div>
+                <h1>Super Admin Dashboard</h1>
+                <p>System access is split into three dashboards: Super Admin, HR, and Employee.</p>
+            </div>
+            <a class="btn" href="/add_employee">Add Employee</a>
+        </div>
+
+        <div class="dashboard-actions">
+            <a class="action-panel" href="/employees">
+                <span>Manage Employees</span>
+                <strong>Accounts, roles, department, position, and face registration</strong>
+            </a>
+
+            <a class="action-panel" href="/work_settings">
+                <span>Work Schedule</span>
+                <strong>{{ schedule.start_time }} - {{ schedule.end_time }}</strong>
+            </a>
+        </div>
+
+        <div class="table-box">
+            <div class="section-heading">
+                <h2>Dashboard Access Rules</h2>
+            </div>
+
+            <table>
+                <tr>
+                    <th>Role</th>
+                    <th>Dashboard</th>
+                    <th>Main Permission</th>
+                </tr>
+                <tr>
+                    <td>Super Admin</td>
+                    <td>/superadmin</td>
+                    <td>Create accounts, assign roles, manage employees, and set work schedule.</td>
+                </tr>
+                <tr>
+                    <td>HR Staff</td>
+                    <td>/hr</td>
+                    <td>Review attendance, register faces, set work schedule, and generate reports.</td>
+                </tr>
+                <tr>
+                    <td>Employee</td>
+                    <td>/employee</td>
+                    <td>View personal attendance records.</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

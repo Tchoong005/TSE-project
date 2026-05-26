@@ -1,0 +1,16 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="toast-stack">
+        {% set category, text = messages[-1] %}
+        <div class="toast toast-{{ category }}">{{ text }}</div>
+    </div>
+    <script>
+        window.setTimeout(() => {
+            document.querySelectorAll(".toast").forEach((toast) => {
+                toast.classList.add("toast-hide");
+                window.setTimeout(() => toast.remove(), 180);
+            });
+        }, 10000);
+    </script>
+    {% endif %}
+{% endwith %}

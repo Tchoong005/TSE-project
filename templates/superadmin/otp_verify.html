@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Account OTP - EAS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <h1>Verify Account OTP</h1>
+            <p>Enter the 6-digit OTP sent to {{ email }} to complete account creation.</p>
+        </div>
+
+        <div class="form-box">
+            <form method="POST">
+                <input type="text" name="otp" placeholder="6-digit OTP" maxlength="6" pattern="\d{6}" required>
+                <button type="submit">Verify OTP & Create Account</button>
+                <a class="btn btn-danger" href="/add_employee">Cancel</a>
+            </form>
+
+            <form method="POST" action="{{ url_for('superadmin.resend_account_otp') }}">
+                <button
+                    class="btn-lite"
+                    type="submit"
+                    data-resend-button
+                    data-resend-text="Resend OTP"
+                    data-resend-remaining="{{ resend_remaining or 0 }}"
+                >Resend OTP</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/account_form.js') }}"></script>
+<script>
+    initAccountForm();
+</script>
+
+</body>
+</html>

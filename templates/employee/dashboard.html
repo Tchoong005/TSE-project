@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <h1>Employee Dashboard</h1>
+            <p>Personal attendance overview, work schedule, and attendance history.</p>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <span>Total Attendance Days</span>
+                <strong>{{ total_days }}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Present Days</span>
+                <strong>{{ present_days }}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Attendance Rate</span>
+                <strong>{{ attendance_percentage }}%</strong>
+            </div>
+        </div>
+
+        {% include "employee/attendance_history.html" %}
+    </div>
+</div>
+
+</body>
+</html>

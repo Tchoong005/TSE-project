@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HR Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <div>
+                <h1>HR Dashboard</h1>
+                <p>Switch between your own attendance and all attendance management work.</p>
+            </div>
+        </div>
+
+        <div class="tabs" data-tabs>
+            <button class="tab-button is-active" type="button" data-tab-target="hr-self">My Attendance</button>
+            <button class="tab-button" type="button" data-tab-target="hr-team">All Attendance</button>
+        </div>
+
+        <section class="tab-panel is-active" id="hr-self">
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <span>Attendance Days</span>
+                    <strong>{{ total_days }}</strong>
+                </div>
+
+                <div class="stat-card">
+                    <span>Present Days</span>
+                    <strong>{{ present_days }}</strong>
+                </div>
+
+                <div class="stat-card">
+                    <span>Attendance Rate</span>
+                    <strong>{{ attendance_percentage }}%</strong>
+                </div>
+            </div>
+
+            <div class="table-box">
+                <div class="section-heading">
+                    <h2>My Attendance History</h2>
+                </div>
+
+                <table>
+                    <tr>
+                        <th>Date</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Status</th>
+                        <th>Overtime</th>
+                    </tr>
+
+                    {% for record in own_records %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.check_in or "-" }}</td>
+                        <td>{{ record.check_out or "-" }}</td>
+                        <td>{{ record.status }}</td>
+                        <td>{{ record.overtime or "No" }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </section>
+
+        <section class="tab-panel" id="hr-team">
+            <div class="action-strip">
+                <div>
+                    <span>Work Schedule</span>
+                    <strong>{{ schedule.start_time }} - {{ schedule.end_time }}</strong>
+                </div>
+                <div class="action-strip-buttons">
+                    <a class="btn" href="/work_settings">Set Time</a>
+                    <a class="btn" href="/attendance_records">View Attendance</a>
+                    <a class="btn btn-success" href="/generate_report">Download All Attendance</a>
+                </div>
+            </div>
+
+            <div class="table-box">
+            <div class="section-heading">
+                <h2>All Attendance Records</h2>
+            </div>
+
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                    <th>Overtime</th>
+                    <th>Action</th>
+                </tr>
+
+                {% for record in all_records %}
+                <tr>
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.full_name }}</td>
+                    <td>{{ record.date }}</td>
+                    <td>{{ record.check_in or "-" }}</td>
+                    <td>{{ record.check_out or "-" }}</td>
+                    <td>{{ record.status }}</td>
+                    <td>{{ record.overtime or "No" }}</td>
+                    <td>
+                        <a class="btn" href="/edit_attendance/{{ record.id }}">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        </section>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/attendance.js') }}"></script>
+
+</body>
+</html>

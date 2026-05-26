@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Employee</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <h1>Edit Employee</h1>
+            <p>Update employee information and role assignment.</p>
+        </div>
+
+        <div class="form-box">
+            <form method="POST">
+                <label>Employee ID</label>
+                <input type="text" value="{{ user.system_id }}" readonly>
+
+                <label>Joined Year</label>
+                <input type="text" value="{{ user.joined_year }}" readonly>
+
+                <label>Full Name</label>
+                <input type="text" name="full_name" value="{{ user.full_name }}" required>
+
+                <label>Email</label>
+                <input type="email" name="email" value="{{ user.email }}" required>
+
+                <label>Role</label>
+                <select id="roleSelect" name="role" required>
+                    <option value="employee" {% if user.role == "employee" %}selected{% endif %}>Employee</option>
+                    <option value="hr" {% if user.role == "hr" %}selected{% endif %}>HR Staff</option>
+                </select>
+                <p class="help-text">Role controls dashboard access only.</p>
+
+                <label>Department</label>
+                <select id="departmentSelect" name="department" required>
+                    {% for department in departments %}
+                    <option value="{{ department }}" {% if user.department == department %}selected{% endif %}>{{ department }}</option>
+                    {% endfor %}
+                </select>
+                <p class="help-text">Department and position describe the employment profile.</p>
+
+                <label>Position</label>
+                <select id="positionSelect" name="position" data-selected="{{ user.position }}" required></select>
+
+                <label>New Password</label>
+                <div class="password-field">
+                    <input id="passwordInput" type="password" name="new_password" placeholder="Leave blank to keep current password">
+                    <button class="btn-lite" type="button" data-toggle-password="passwordInput">Show</button>
+                </div>
+                <p class="help-text">Only fill this when resetting the password.</p>
+                <div class="password-rules" id="passwordRules">
+                    <span data-rule="length">8+ characters</span>
+                    <span data-rule="letter">Letter</span>
+                    <span data-rule="number">Number</span>
+                    <span data-rule="symbol">Symbol</span>
+                </div>
+
+                <label>Status</label>
+                <select name="status" required>
+                    <option value="Active" {% if user.status == "Active" %}selected{% endif %}>Active</option>
+                    <option value="Inactive" {% if user.status == "Inactive" %}selected{% endif %}>Inactive</option>
+                </select>
+
+                <button type="submit">Update Employee</button>
+                <a class="btn btn-danger" href="{{ url_for('superadmin.employees') }}">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const departmentPositions = {{ department_positions | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/account_form.js') }}"></script>
+<script>
+    initAccountForm();
+</script>
+
+</body>
+</html>

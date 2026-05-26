@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - EAS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body class="auth-page">
+
+{% include "shared/toast.html" %}
+
+<main class="auth-shell">
+    <section class="auth-hero">
+        <div class="auth-logo-block">
+            <img src="{{ url_for('static', filename='images/bilobali_logo.png') }}" alt="Bilobali logo">
+            <div>
+                <strong>EAS</strong>
+                <span>Employee Attendance System</span>
+            </div>
+        </div>
+        <div class="auth-company">
+            <span>Bilobali Sdn. Bhd.</span>
+        </div>
+    </section>
+
+    <section class="auth-panel">
+        <h2>Dashboard Login</h2>
+        <p>Login with your employee system ID and password.</p>
+
+        <form method="POST">
+            <input type="text" name="system_id" placeholder="Employee ID" required>
+            <div class="password-field">
+                <input id="passwordInput" type="password" name="password" placeholder="Password" required>
+                <button class="btn-lite" type="button" data-toggle-password="passwordInput">Show</button>
+            </div>
+            <div class="auth-form-row">
+                <a class="auth-text-link" href="/forgot_password">Forgot password?</a>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+
+        <a class="btn auth-kiosk-link" href="/attendance_kiosk">Open Attendance Kiosk</a>
+    </section>
+</main>
+
+<script src="{{ url_for('static', filename='js/account_form.js') }}"></script>
+<script>
+    initPasswordToggle();
+</script>
+
+</body>
+</html>

@@ -1,416 +1,271 @@
 # Employee Attendance System (EAS)
 
-## IMPORTANT!!!!
-pls dont gitpush your .venv
+Employee Attendance System (EAS) is a Flask-based attendance management system for Bilobali Sdn. Bhd. It uses role-based dashboards, email OTP account flows, and face recognition for attendance check-in/check-out.
 
-## how to ignore
+## Current Features
 
-create a .gitignore in .venv
-put * 
+- Employee ID login with role-based dashboard routing.
+- Three dashboard roles: Super Admin, HR Staff, and Employee.
+- Email OTP for account creation and forgot password reset.
+- Passwords are stored as hashes, not plaintext.
+- Employee account soft delete and restore. Deleted accounts remain visible in Employee Management, cannot login, and can be restored by Super Admin.
+- Website-based face registration using the browser camera.
+- Face-recognition attendance kiosk.
+- HR attendance review, attendance correction, work schedule settings, and CSV report generation.
+- Profile page with user-uploaded profile photo.
+- Collapsible sidebar with profile and logout grouped at the bottom.
 
-## Overview
+## Roles
 
-Employee Attendance System (EAS) is a web-based attendance management system developed using Python Flask. The system is designed to automate employee attendance tracking for organisations by replacing traditional manual attendance methods such as spreadsheets and paper records.
+| Role | Dashboard | Main Access |
+| --- | --- | --- |
+| Super Admin | `/superadmin` | Manage employee accounts, assign roles, register faces, set work schedule |
+| HR Staff | `/hr` | View/correct attendance, register faces, generate reports, set work schedule |
+| Employee | `/employee` | View personal attendance summary and history |
 
-This system uses facial recognition technology for employee check-in and check-out, improving attendance accuracy, reducing administrative workload, and preventing proxy attendance.
+## Account Rules
 
-The project is developed for Bilobali Sdn. Bhd., an IT services company with approximately 75 employees.
+- Users login with Employee ID, not username.
+- `Role` controls dashboard access.
+- `Department` and `Position` describe the employee profile.
+- HR Staff accounts must be in the Human Resource department.
+- Joined year options are generated automatically from 2005 through 5 years after the current year. For example, in 2026 the form includes up to 2031, so 2027 and 2028 employees can be added without changing code.
+- Delete is a soft delete: the row stays in the employee table with status `Deleted` and `deleted_at`.
+- Super Admin can restore a soft-deleted account from Employee Management.
 
----
+## Security Notes
 
-## System Objectives
-
-The main objectives of this system are:
-
-- Automate employee attendance check-in and check-out.
-- Reduce human errors in attendance recording.
-- Prevent proxy attendance using facial recognition.
-- Provide attendance monitoring for HR Management.
-- Allow Super Admin to manage employees and user roles.
-- Allow employees to monitor their own attendance performance.
-- Generate attendance reports for management review.
-
----
-
-## User Roles and Permissions
-
-### 1. Super Admin
-
-The Super Admin is responsible for full system administration.
-
-Permissions:
-
-- Login to the system
-- Manage employee accounts
-- Add employee records
-- Edit employee records
-- Delete employee records
-- Assign user roles
-- Register employee facial profiles
-- Access Super Admin dashboard
-
----
-
-### 2. HR Management
-
-HR Management handles attendance monitoring and correction.
-
-Permissions:
-
-- Login to the system
-- View employee attendance records
-- Edit attendance records when system errors occur
-- Generate attendance reports
-- Assist in employee facial registration
-- Access HR dashboard
-
----
-
-### 3. Employee
-
-Employees use the attendance system for daily attendance tracking.
-
-Permissions:
-
-- Login to the system
-- Check in using facial recognition
-- Check out using facial recognition
-- View attendance history
-- View attendance percentage
-- Access Employee dashboard
-
----
-
-## System Workflow
-
-### Initial Registration
-
-1. Super Admin or HR Management creates an employee account.
-2. A role is assigned to the employee.
-3. Employee facial data is registered using the camera.
-4. Facial profile is stored for future verification.
-
----
-
-### Daily Attendance
-
-1. Employee logs into the system.
-2. Employee selects Check-In or Check-Out.
-3. Camera captures employee face.
-4. System compares captured face with registered facial data.
-5. If matched:
-   - Attendance is recorded automatically.
-6. If system recording fails:
-   - HR Management manually edits attendance record.
-
----
-
-## Agile Development Model
-
-This project follows the Agile Software Development Model.
-
-Development is divided into multiple sprints.
-
-### Sprint Plan
-
-| Sprint | Features |
-|-------|----------|
-| Sprint 1 | Login System + Role-Based Dashboard |
-| Sprint 2 | Employee Management + Role Assignment |
-| Sprint 3 | Face Registration + Facial Recognition Attendance |
-| Sprint 4 | Attendance Monitoring + Attendance Editing |
-| Sprint 5 | Attendance Reports + Attendance Percentage |
-
----
-
-## Technologies Used
-
-Backend:
-
-- Python
-- Flask
-- SQLite
-
-Frontend:
-
-- HTML
-- CSS
-- JavaScript
-
-Facial Recognition:
-
-- OpenCV
-- face_recognition library
-
-Development Tools:
-
-- Visual Studio Code
-- Git
-- Python Virtual Environment (venv)
-
----
-
-## Project Structure
+- Passwords are hashed with Werkzeug password hashing before storage.
+- Existing plaintext passwords are migrated to hashes when the app initializes.
+- Deleted accounts are blocked from login and face/attendance workflows.
+- Email OTP requires mail environment variables. See `.env` or your shell environment for:
 
 ```text
-TSE-project/
-|
-|-- app.py
-|-- database.py
-|-- config.py
-|-- requirements.txt
-|-- README.md
-|-- .gitignore
-|
-|-- face_data/
-|
-|-- templates/
-|   |-- login.html
-|   |-- superadmin_dashboard.html
-|   |-- hr_dashboard.html
-|   |-- employee_dashboard.html
-|   |-- employees.html
-|   |-- add_employee.html
-|   |-- edit_employee.html
-|   |-- attendance_records.html
-|   |-- edit_attendance.html
-|
-|-- static/
-|   |-- style.css
-|
-|-- routes/
-|   |-- __init__.py
-|   |-- auth_routes.py
-|   |-- superadmin_routes.py
-|   |-- hr_routes.py
-|   |-- employee_routes.py
-|
-|-- services/
-|   |-- __init__.py
-|   |-- face_service.py
-|   |-- attendance_service.py
-|   |-- report_service.py
+MAIL_USERNAME
+MAIL_PASSWORD
 ```
 
----
+## Default Login Accounts
 
-# Installation Guide
+| Role | Employee ID | Password |
+| --- | --- | --- |
+| Super Admin | `20050001` | `Admin@123` |
+| HR Staff | `20260002` | `Hr@12345` |
+| Employee | `20260003` | `Employee@123` |
 
-## 1. Clone or Download Project
+## Installation
 
-Download the project files or clone the repository.
+### Required Versions
 
-Example:
+Use Python 3.10 64-bit for the most reliable setup. This project uses face recognition packages, and those packages can fail on newer Python versions such as 3.12 or 3.13 on Windows.
 
-```bash
-git clone https://github.com/your-repository/TSE-project.git
-```
+Download links:
 
-Or manually open the project folder in Visual Studio Code.
+- Python 3.10.11: open `https://www.python.org/downloads/release/python-31011/`, scroll to Files, click `Windows installer (64-bit)`.
+- Visual Studio Code: open `https://code.visualstudio.com/Download`, click `Windows`.
+- Git for Windows, if you need Git commands: open `https://git-scm.com/download/win`, then run the downloaded installer.
 
----
+During Python installation, tick `Add python.exe to PATH`.
 
-## 2. Install Python
+### VS Code Setup
 
-Make sure Python 3.11 or 3.12 is installed.
-
-Check version:
-
-```bash
-python --version
-```
-
-Expected output:
-
-```bash
-Python 3.x.x
-```
-
----
-
-## 3. Create Virtual Environment
-
-Inside project folder:
-
-```bash
-python -m venv .venv
-```
-
-This creates a virtual environment folder:
+Open this project folder in VS Code:
 
 ```text
-.venv/
+File -> Open Folder -> TSE-project
 ```
 
----
+Create the virtual environment in VS Code's terminal:
 
-## 4. Activate Virtual Environment
+```powershell
+py -3.10 -m venv .venv
+```
 
-### Windows PowerShell
+Select the project interpreter in VS Code:
+
+```text
+Ctrl + Shift + P -> Python: Select Interpreter -> .venv\Scripts\python.exe
+```
+
+Open a new VS Code terminal. It should show `(.venv)` at the left side of the prompt. If it does not activate automatically, run:
 
 ```powershell
 .\.venv\Scripts\activate
 ```
 
-Successful activation:
+Install dependencies:
 
 ```powershell
-(.venv)
-```
-
-appears in terminal.
-
----
-
-### Windows CMD
-
-```cmd
-.venv\Scripts\activate
-```
-
----
-
-### Mac / Linux
-
-```bash
-source .venv/bin/activate
-```
-
----
-
-## 5. Install Dependencies
-
-Install required packages:
-
-```bash
 pip install -r requirements.txt
 ```
 
-If pip does not work:
+If that fails, try these commands in order:
 
-```bash
-python -m pip install -r requirements.txt
+```powershell
+python -m pip install --upgrade pip setuptools wheel
+pip install --no-cache-dir -r requirements.txt
 ```
 
----
+If face recognition packages still fail on Windows, install the binary package first, then retry requirements:
 
-## 6. Run Application
+```powershell
+pip install dlib-bin
+pip install face-recognition-models
+pip install face-recognition
+pip install -r requirements.txt
+```
 
-Start Flask application:
+Run the app:
 
-```bash
+```powershell
 python app.py
 ```
 
-Expected output:
-
-```bash
-Running on http://127.0.0.1:5000
-```
-
----
-
-## 7. Open Browser
-
-Visit:
+Open:
 
 ```text
 http://127.0.0.1:5000
 ```
 
----
+### Environment Variables
 
-# Default Login Accounts
+Do not hardcode passwords or secrets in Python files. The app automatically reads a local `.env` file, and `.env` is ignored by Git.
 
-## Super Admin
+Create `.env` from the example file:
 
-Username:
+```powershell
+copy .env.example .env
+```
 
-superadmin
+Open `.env` and fill in your own values:
 
-Password:
+```text
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_16_character_gmail_app_password
+EAS_SECRET_KEY=change-this-to-a-long-random-secret
+```
 
-123456
+For Gmail, `MAIL_PASSWORD` must be a Gmail App Password, not your normal Gmail login password.
 
----
+To create a Gmail App Password:
 
-## HR Management
+1. Open `https://myaccount.google.com/security`
+2. Turn on `2-Step Verification`
+3. Open `https://myaccount.google.com/apppasswords`
+4. Create an app password for this Flask project
+5. Copy the 16-character password into `.env`
 
-Username:
+After changing `.env`, stop Flask and start it again:
 
-hr
+```powershell
+python app.py
+```
 
-Password:
+You can also set the variables directly in PowerShell instead of using `.env`:
 
-123456
+```powershell
+$env:MAIL_USERNAME="your_email@gmail.com"
+$env:MAIL_PASSWORD="your_gmail_app_password"
+$env:EAS_SECRET_KEY="change-this-to-a-long-random-secret"
+python app.py
+```
 
----
+To use a different SQLite database for testing:
 
-## Employee
+```powershell
+$env:EAS_DATABASE="C:\tmp\eas_test.db"
+python app.py
+```
 
-Username:
+## Project Structure
 
-employee
+```text
+TSE-project/
+|-- app.py
+|-- config.py
+|-- database.py
+|-- requirements.txt
+|-- README.md
+|-- .gitignore
+|-- attendance.db
+|-- face_data/
+|-- routes/
+|   |-- auth_routes.py
+|   |-- employee_routes.py
+|   |-- hr_routes.py
+|   |-- kiosk_routes.py
+|   |-- profile_routes.py
+|   |-- superadmin_routes.py
+|-- services/
+|   |-- attendance_service.py
+|   |-- auth_service.py
+|   |-- face_service.py
+|   |-- id_generator_service.py
+|   |-- otp_service.py
+|   |-- profile_service.py
+|   |-- report_service.py
+|-- models/
+|   |-- attendance_model.py
+|   |-- otp_model.py
+|   |-- user_model.py
+|-- utils/
+|   |-- constants.py
+|   |-- helpers.py
+|   |-- security.py
+|   |-- validators.py
+|-- static/
+|   |-- css/
+|   |   |-- auth.css
+|   |   |-- dashboard.css
+|   |   |-- kiosk.css
+|   |   |-- main.css
+|   |-- images/
+|   |   |-- bilobali_logo.png
+|   |-- js/
+|   |   |-- account_form.js
+|   |   |-- app_shell.js
+|   |   |-- attendance.js
+|   |   |-- kiosk_camera.js
+|   |   |-- profile.js
+|-- templates/
+|   |-- auth/
+|   |   |-- forgot_password.html
+|   |   |-- login.html
+|   |   |-- otp_verify.html
+|   |   |-- reset_password.html
+|   |-- employee/
+|   |   |-- attendance_history.html
+|   |   |-- dashboard.html
+|   |-- hr/
+|   |   |-- attendance_records.html
+|   |   |-- dashboard.html
+|   |   |-- edit_attendance.html
+|   |   |-- face_registration.html
+|   |-- kiosk/
+|   |   |-- attendance_kiosk.html
+|   |-- shared/
+|   |   |-- modal.html
+|   |   |-- navbar.html
+|   |   |-- profile.html
+|   |   |-- register_face.html
+|   |   |-- settings.html
+|   |   |-- sidebar.html
+|   |   |-- toast.html
+|   |   |-- work_settings.html
+|   |-- superadmin/
+|   |   |-- add_employee.html
+|   |   |-- dashboard.html
+|   |   |-- edit_employee.html
+|   |   |-- employees.html
+|   |   |-- otp_verify.html
+```
 
-Password:
+## Development Notes
 
-123456
-
----
-
-# Current Development Status
-
-Current Sprint:
-
-**Sprint 1**
-
-Completed:
-
-- Flask setup
-- SQLite database setup
-- Login authentication
-- Role-based dashboard
-- Session management
-- Logout
-
-Upcoming:
-
-- Employee CRUD management
-- Role assignment
-- Facial registration
-- Attendance check-in/check-out
-- Report generation
-
----
-
-# Future Enhancements
-
-Planned improvements:
-
-- Real-time facial recognition attendance
-- Attendance analytics dashboard
-- Export attendance reports (PDF / Excel)
-- Payroll integration
-- Email notifications
-- Mobile-responsive UI
-
----
-
-# Academic Information
-
-Course:
-
-TSE6223 Software Engineering Fundamentals
-
-Project Title:
-
-Employee Attendance System (EAS)
-
-Institution:
-
-Multimedia University (MMU)
-
-Development Model:
-
-Agile Software Development
-
+- `.gitignore` excludes `.venv/`, `.env`, `attendance.db`, face profile `.pkl` files, generated reports, and uploaded profile images.
+- CSS is split by responsibility:
+  - `static/css/main.css`: global variables, base elements, and shared controls.
+  - `static/css/auth.css`: login, forgot password, OTP, reset password, and auth responsive rules.
+  - `static/css/dashboard.css`: sidebar, dashboard cards, tables, forms, profile, settings, face registration, and dashboard responsive rules.
+  - `static/css/kiosk.css`: attendance kiosk camera page and kiosk responsive rules.
+- `attendance.db` is a local SQLite database and may change during local testing.

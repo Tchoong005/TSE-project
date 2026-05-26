@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings - EAS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <h1>Settings</h1>
+            <p>Reset your dashboard password.</p>
+        </div>
+
+        <div class="form-box settings-box">
+            <h2>Reset Password</h2>
+            <form method="POST">
+                <label>Old Password</label>
+                <div class="password-field">
+                    <input id="oldPassword" type="password" name="old_password" required>
+                    <button class="btn-lite" type="button" data-toggle-password="oldPassword">Show</button>
+                </div>
+
+                <label>New Password</label>
+                <div class="password-field">
+                    <input id="newPassword" type="password" name="new_password" required>
+                    <button class="btn-lite" type="button" data-toggle-password="newPassword">Show</button>
+                </div>
+                <ul class="password-rules" data-password-rules="newPassword">
+                    <li data-rule="length">At least 8 characters</li>
+                    <li data-rule="letter">Includes a letter</li>
+                    <li data-rule="number">Includes a number</li>
+                    <li data-rule="symbol">Includes a symbol</li>
+                </ul>
+
+                <label>Confirm New Password</label>
+                <div class="password-field">
+                    <input id="confirmPassword" type="password" name="confirm_password" required>
+                    <button class="btn-lite" type="button" data-toggle-password="confirmPassword">Show</button>
+                </div>
+                <div class="field-error" id="confirmPasswordMessage"></div>
+
+                <button type="submit">Update Password</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/account_form.js') }}"></script>
+<script>
+    initAccountForm();
+</script>
+
+</body>
+</html>

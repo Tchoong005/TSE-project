@@ -1,0 +1,42 @@
+<aside class="sidebar" id="appSidebar">
+    <div class="sidebar-top">
+        <button class="brand-lockup" type="button" data-sidebar-toggle aria-label="Toggle sidebar">
+            <img src="{{ url_for('static', filename='images/bilobali_logo.png') }}" alt="Bilobali logo">
+            <span><strong>EAS</strong><small>Employee Attendance System</small></span>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+    {% if session.get("role") == "superadmin" %}
+    <a href="/superadmin" data-icon="D"><span>Dashboard</span></a>
+    <a href="/employees" data-icon="E"><span>Manage Employees</span></a>
+    <a href="/superadmin/face_registration" data-icon="F"><span>Face Registration</span></a>
+    <a href="/work_settings" data-icon="W"><span>Work Schedule</span></a>
+    {% elif session.get("role") == "hr" %}
+    <a href="/hr" data-icon="D"><span>Dashboard</span></a>
+    <a href="/employees" data-icon="E"><span>Manage Employees</span></a>
+    <a href="/attendance_records" data-icon="A"><span>Attendance Records</span></a>
+    <a href="/face_registration" data-icon="F"><span>Face Registration</span></a>
+    <a href="/work_settings" data-icon="W"><span>Work Schedule</span></a>
+    {% else %}
+    <a href="/employee" data-icon="D"><span>Dashboard</span></a>
+    {% endif %}
+
+    <a href="/settings" data-icon="S"><span>Settings</span></a>
+    </nav>
+
+    {% if current_user %}
+    {% set role_label = "Super Admin" if current_user.role == "superadmin" else ("HR Staff" if current_user.role == "hr" else "Employee") %}
+    <div class="sidebar-account">
+        <a class="sidebar-profile" href="/profile" title="Profile">
+            <img src="{{ url_for('static', filename=current_user.profile_image) if current_user.profile_image else url_for('static', filename='images/bilobali_logo.png') }}" alt="Profile photo">
+            <span>
+                <strong>{{ current_user.full_name or "User" }}</strong>
+                <small>{{ role_label }}</small>
+            </span>
+        </a>
+        <a class="sidebar-logout" href="/logout" data-icon="L"><span>Logout</span></a>
+    </div>
+    {% endif %}
+</aside>
+<script src="{{ url_for('static', filename='js/app_shell.js') }}"></script>

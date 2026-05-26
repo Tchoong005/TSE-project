@@ -2,18 +2,15 @@
 <html>
 <head>
     <title>Edit Attendance</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 </head>
 <body>
 
+{% include "shared/toast.html" %}
+
 <div class="layout">
-    <div class="sidebar">
-        <h2>EAS System</h2>
-        <a href="/hr">Dashboard</a>
-        <a href="/attendance_records">Attendance Records</a>
-        <a href="/generate_report">Generate Report</a>
-        <a href="/logout">Logout</a>
-    </div>
+    {% include "shared/sidebar.html" %}
 
     <div class="main">
         <div class="header">
@@ -27,10 +24,10 @@
 
             <form method="POST">
                 <label>Check In</label>
-                <input type="text" name="check_in" value="{{ record.check_in }}">
+                <input type="time" name="check_in" value="{{ record.check_in or '' }}" step="1">
 
                 <label>Check Out</label>
-                <input type="text" name="check_out" value="{{ record.check_out }}">
+                <input type="time" name="check_out" value="{{ record.check_out or '' }}" step="1">
 
                 <label>Status</label>
                 <select name="status">
@@ -40,7 +37,12 @@
                 </select>
 
                 <label>Edit Reason</label>
-                <input type="text" name="reason" value="{{ record.edit_reason }}" required>
+                <select name="reason" required>
+                    <option value="" disabled {% if not record.edit_reason %}selected{% endif %}>Select a reason</option>
+                    {% for reason in edit_reasons %}
+                    <option value="{{ reason }}" {% if record.edit_reason == reason %}selected{% endif %}>{{ reason }}</option>
+                    {% endfor %}
+                </select>
 
                 <button type="submit">Update Attendance</button>
                 <a class="btn btn-danger" href="/attendance_records">Cancel</a>

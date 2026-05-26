@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Employee</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <h1>Add Employee</h1>
+            <p>Create a new user account and assign a role.</p>
+        </div>
+
+        <div class="form-box">
+            <form method="POST">
+                <label>Joined Year</label>
+                <select name="joined_year" required>
+                    {% for year in years %}
+                    <option value="{{ year }}" {% if form_data.get("joined_year") == year|string %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+                <p class="help-text">The list automatically includes the next 5 years. The system ID is generated after OTP verification.</p>
+
+                <label>Password</label>
+                <div class="password-field">
+                    <input id="passwordInput" type="password" name="password" placeholder="Example: Staff@123" autocomplete="new-password" required>
+                    <button class="btn-lite" type="button" data-toggle-password="passwordInput">Show</button>
+                </div>
+                <div class="password-rules" id="passwordRules">
+                    <span data-rule="length">8+ characters</span>
+                    <span data-rule="letter">Letter</span>
+                    <span data-rule="number">Number</span>
+                    <span data-rule="symbol">Symbol</span>
+                </div>
+
+                <label>Full Name</label>
+                <input type="text" name="full_name" placeholder="Full Name" value="{{ form_data.get('full_name', '') }}" required>
+
+                <label>Email</label>
+                <input type="email" name="email" placeholder="Email" value="{{ form_data.get('email', '') }}" required>
+
+                <label>Role</label>
+                <select id="roleSelect" name="role" required>
+                    <option value="employee" {% if form_data.get("role", "employee") == "employee" %}selected{% endif %}>Employee</option>
+                    <option value="hr" {% if form_data.get("role") == "hr" %}selected{% endif %}>HR Staff</option>
+                </select>
+                <p class="help-text">Role controls which dashboard the user enters after login.</p>
+
+                <label>Department</label>
+                <select id="departmentSelect" name="department" required>
+                    {% for department in departments %}
+                    <option value="{{ department }}" {% if form_data.get("department") == department %}selected{% endif %}>{{ department }}</option>
+                    {% endfor %}
+                </select>
+                <p class="help-text">Department is the employee's business unit.</p>
+
+                <label>Position</label>
+                <select id="positionSelect" name="position" data-selected="{{ form_data.get('position', '') }}" required></select>
+                <p class="help-text">Position is filtered by the selected department.</p>
+
+                <button type="submit">Add Employee</button>
+                <a class="btn btn-danger" href="{{ url_for('superadmin.employees') }}">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const departmentPositions = {{ department_positions | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/account_form.js') }}"></script>
+<script>
+    initAccountForm();
+</script>
+
+</body>
+</html>

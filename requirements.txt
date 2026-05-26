@@ -1,6 +1,9 @@
 Flask
+python-dotenv
 Werkzeug
 opencv-python
-face_recognition
 numpy
 pandas
+face-recognition-models
+dlib-bin
+face-recognition

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify OTP - EAS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body class="auth-page">
+
+{% include "shared/toast.html" %}
+
+<main class="auth-shell auth-shell-compact">
+    <section class="auth-hero">
+        <div class="auth-logo-block auth-logo-block-small">
+            <img src="{{ url_for('static', filename='images/bilobali_logo.png') }}" alt="Bilobali logo">
+            <div>
+                <strong>EAS</strong>
+                <span>Employee Attendance System</span>
+            </div>
+        </div>
+        <div>
+            <h1>Verify OTP</h1>
+            <p>Enter the 6-digit OTP sent to {{ email }}. The code expires after 5 minutes.</p>
+        </div>
+        <div class="auth-points">
+            <span>6 Digits</span>
+            <span>Email OTP</span>
+            <span>Password Reset</span>
+        </div>
+    </section>
+
+    <section class="auth-panel">
+        <h2>OTP Code</h2>
+        <p>Check your Gmail inbox before continuing.</p>
+
+        <form method="POST">
+            <input type="text" name="otp" placeholder="6-digit OTP" maxlength="6" pattern="\d{6}" required>
+            <button type="submit">Verify OTP</button>
+        </form>
+
+        <form method="POST" action="{{ url_for('auth.resend_forgot_otp') }}">
+            <button
+                class="auth-kiosk-link"
+                type="submit"
+                data-resend-button
+                data-resend-text="Resend OTP"
+                data-resend-remaining="{{ resend_remaining or 0 }}"
+            >Resend OTP</button>
+        </form>
+
+        <a class="btn auth-kiosk-link" href="/forgot_password">Use Different Email</a>
+    </section>
+</main>
+
+<script src="{{ url_for('static', filename='js/account_form.js') }}"></script>
+<script>
+    initAccountForm();
+</script>
+
+</body>
+</html>

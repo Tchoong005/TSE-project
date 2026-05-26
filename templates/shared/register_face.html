@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register Face - EAS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <div>
+                <h1>Register Face</h1>
+                <p>Capture the face profile directly inside the website.</p>
+            </div>
+            <a class="btn btn-lite" href="{{ url_for('hr.face_registration') if session.get('role') == 'hr' else url_for('superadmin.superadmin_face_registration') }}">Back</a>
+        </div>
+
+        <div class="face-register-grid">
+            <section class="face-camera-panel">
+                <div class="camera-box face-register-camera">
+                    <video id="camera" autoplay playsinline></video>
+                    <canvas id="snapshot" hidden></canvas>
+                    <div class="face-frame" aria-hidden="true"></div>
+                    <div id="modeBadge" class="mode-badge">Ready to capture</div>
+                </div>
+                <div id="message" class="kiosk-message">Allow camera access, then place the face inside the frame.</div>
+            </section>
+
+            <aside class="face-user-panel">
+                <img src="{{ url_for('static', filename=user.profile_image) if user.profile_image else url_for('static', filename='images/bilobali_logo.png') }}" alt="Profile photo">
+                <h2>{{ user.full_name }}</h2>
+                <p>{{ user.system_id }}</p>
+                <dl>
+                    <div><dt>Role</dt><dd>{{ "HR Staff" if user.role == "hr" else "Employee" }}</dd></div>
+                    <div><dt>Department</dt><dd>{{ user.department }}</dd></div>
+                    <div><dt>Position</dt><dd>{{ user.position }}</dd></div>
+                    <div>
+                        <dt>Face Status</dt>
+                        <dd>
+                            <span id="faceStatusPill" class="status-pill {{ 'status-active' if face_registered else 'status-pending' }}">
+                                {{ "Registered" if face_registered else "Not Registered" }}
+                            </span>
+                        </dd>
+                    </div>
+                </dl>
+                <button id="captureButton" type="button" data-register-face-url="{{ url_for('superadmin.api_register_face', user_id=user.id) }}">{{ "Re-register Face" if face_registered else "Capture Face" }}</button>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+
+</body>
+</html>

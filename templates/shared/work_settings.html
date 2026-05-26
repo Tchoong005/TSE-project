@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Work Schedule Settings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+{% include "shared/toast.html" %}
+
+<div class="layout">
+    {% include "shared/sidebar.html" %}
+
+    <div class="main">
+        <div class="header">
+            <h1>Work Schedule Settings</h1>
+            <p>Set official start and end time for late and overtime calculation.</p>
+        </div>
+
+        <div class="form-box">
+            {% if message %}
+            <p class="message-success">{{ message }}</p>
+            {% endif %}
+
+            <form method="POST">
+                <label>Start Work Time</label>
+                <input type="time" name="start_time" value="{{ schedule.start_time }}" required>
+
+                <label>End Work Time</label>
+                <input type="time" name="end_time" value="{{ schedule.end_time }}" required>
+
+                <button type="submit">Save Schedule</button>
+            </form>
+        </div>
+
+        {% if session.get("role") == "superadmin" %}
+        <div class="form-box danger-zone">
+            <h2>Testing Tools</h2>
+            <p>Clear all attendance records when you need to test face check-in and check-out again.</p>
+
+            <form method="POST" action="/clear_attendance" onsubmit="return confirm('Clear all attendance records?')">
+                <button class="btn-danger" type="submit">Clear Attendance Records</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>
