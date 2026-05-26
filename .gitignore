@@ -6,5 +6,4 @@ attendance.db
 attendance_report.csv
 *.db-journal*
 *.bak
-face_data/*.pkl
 static/images/profile_images/
