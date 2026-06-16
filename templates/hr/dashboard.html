@@ -20,12 +20,13 @@
             </div>
         </div>
 
+        {% set current_tab = active_tab or "hr-self" %}
         <div class="tabs" data-tabs>
-            <button class="tab-button is-active" type="button" data-tab-target="hr-self">My Attendance</button>
-            <button class="tab-button" type="button" data-tab-target="hr-team">All Attendance</button>
+            <button class="tab-button {{ 'is-active' if current_tab == 'hr-self' else '' }}" type="button" data-tab-target="hr-self">My Attendance</button>
+            <button class="tab-button {{ 'is-active' if current_tab == 'hr-team' else '' }}" type="button" data-tab-target="hr-team">All Attendance</button>
         </div>
 
-        <section class="tab-panel is-active" id="hr-self">
+        <section class="tab-panel {{ 'is-active' if current_tab == 'hr-self' else '' }}" id="hr-self">
             <div class="stat-grid">
                 <div class="stat-card">
                     <span>Attendance Days</span>
@@ -70,7 +71,7 @@
             </div>
         </section>
 
-        <section class="tab-panel" id="hr-team">
+        <section class="tab-panel {{ 'is-active' if current_tab == 'hr-team' else '' }}" id="hr-team">
             <div class="action-strip">
                 <div>
                     <span>Work Schedule</span>
@@ -79,43 +80,83 @@
                 <div class="action-strip-buttons">
                     <a class="btn" href="/work_settings">Set Time</a>
                     <a class="btn" href="/attendance_records">View Attendance</a>
-                    <a class="btn btn-success" href="/generate_report">Download All Attendance</a>
                 </div>
             </div>
 
-            <div class="table-box">
-            <div class="section-heading">
-                <h2>All Attendance Records</h2>
+            <div class="form-box report-box">
+                <div class="section-heading">
+                    <h2>Generate Attendance Report</h2>
+                </div>
+                <form class="report-filter-form" method="POST" action="{{ url_for('hr.generate_report') }}">
+                    <div>
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" value="{{ report_start_date }}">
+                    </div>
+                    <div>
+                        <label>End Date</label>
+                        <input type="date" name="end_date" value="{{ report_end_date }}">
+                    </div>
+                    <button type="submit">Generate Report</button>
+                    <a class="btn btn-success" href="{{ url_for('hr.export_csv') }}">Export CSV</a>
+                </form>
             </div>
 
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Employee</th>
-                    <th>Date</th>
-                    <th>Check In</th>
-                    <th>Check Out</th>
-                    <th>Status</th>
-                    <th>Overtime</th>
-                    <th>Action</th>
-                </tr>
+            <div class="table-box">
+                <div class="section-heading">
+                    <div>
+                        <h2>Last Generated Report</h2>
+                        {% if report_start_date or report_end_date %}
+                        <p>
+                            Period:
+                            {{ report_start_date or "Any start date" }}
+                            to
+                            {{ report_end_date or "Any end date" }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
 
-                {% for record in all_records %}
-                <tr>
-                    <td>{{ record.id }}</td>
-                    <td>{{ record.full_name }}</td>
-                    <td>{{ record.date }}</td>
-                    <td>{{ record.check_in or "-" }}</td>
-                    <td>{{ record.check_out or "-" }}</td>
-                    <td>{{ record.status }}</td>
-                    <td>{{ record.overtime or "No" }}</td>
-                    <td>
-                        <a class="btn" href="/edit_attendance/{{ record.id }}">Edit</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+                {% if report_rows %}
+                <table>
+                    <tr>
+                        <th>Group</th>
+                        <th>Employee ID</th>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th>Position</th>
+                        <th>Date</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Status</th>
+                        <th>Overtime</th>
+                        <th>Edited By</th>
+                        <th>Reason</th>
+                    </tr>
+
+                    {% for row in report_rows %}
+                    <tr>
+                        <td>{{ row["Group"] }}</td>
+                        <td>{{ row["Employee ID"] }}</td>
+                        <td>{{ row["Employee Name"] }}</td>
+                        <td>{{ row["Department"] }}</td>
+                        <td>{{ row["Position"] }}</td>
+                        <td>{{ row["Date"] }}</td>
+                        <td>{{ row["Check In"] }}</td>
+                        <td>{{ row["Check Out"] }}</td>
+                        <td>{{ row["Status"] }}</td>
+                        <td>{{ row["Overtime"] }}</td>
+                        <td>{{ row["Edited By"] }}</td>
+                        <td>{{ row["Edit Reason"] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <strong>No report generated yet.</strong>
+                    <p>Select a report period and click Generate Report to show the latest report here.</p>
+                </div>
+                {% endif %}
+            </div>
         </section>
     </div>
 </div>

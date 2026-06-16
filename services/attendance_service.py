@@ -138,9 +138,21 @@ def clear_attendance_records():
     conn.close()
 
 
-def get_report_records():
+def get_report_records(start_date=None, end_date=None):
     conn = get_db_connection()
-    records = conn.execute("""
+    filters = ["users.role IN ('hr', 'employee')"]
+    params = []
+
+    if start_date:
+        filters.append("attendance.date >= ?")
+        params.append(start_date)
+
+    if end_date:
+        filters.append("attendance.date <= ?")
+        params.append(end_date)
+
+    where_clause = " AND ".join(filters)
+    records = conn.execute(f"""
         SELECT
             users.system_id,
             users.full_name,
@@ -156,9 +168,9 @@ def get_report_records():
             attendance.edit_reason
         FROM attendance
         JOIN users ON attendance.user_id = users.id
-        WHERE users.role IN ('hr', 'employee')
+        WHERE {where_clause}
         ORDER BY users.role DESC, users.full_name, attendance.date DESC
-    """).fetchall()
+    """, params).fetchall()
     conn.close()
     return records
 

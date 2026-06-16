@@ -4,11 +4,11 @@ from config import REPORT_FILE
 from services.attendance_service import get_report_records
 
 
-def generate_attendance_report():
-    records = get_report_records()
+def build_report_rows(start_date=None, end_date=None):
+    records = get_report_records(start_date, end_date)
 
     if not records:
-        return None
+        return []
 
     data = []
 
@@ -29,6 +29,19 @@ def generate_attendance_report():
             "Edited By": record["edited_by"] or "-",
             "Edit Reason": record["edit_reason"] or "-",
         })
+
+    return data
+
+
+def generate_attendance_report(start_date=None, end_date=None):
+    return build_report_rows(start_date, end_date)
+
+
+def export_attendance_report_csv(start_date=None, end_date=None):
+    data = build_report_rows(start_date, end_date)
+
+    if not data:
+        return None
 
     df = pd.DataFrame(data)
     df = df.sort_values(["Role Order", "Employee Name", "Date"], ascending=[True, True, False])

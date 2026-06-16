@@ -23,6 +23,7 @@ def login():
             session["user_id"] = user["id"]
             session["system_id"] = user["system_id"]
             session["role"] = user["role"]
+            flash("Login successful", "success")
 
             if user["role"] == "superadmin":
                 return redirect(url_for("superadmin.superadmin_dashboard"))

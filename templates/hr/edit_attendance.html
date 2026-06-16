@@ -24,25 +24,30 @@
 
             <form method="POST">
                 <label>Check In</label>
-                <input type="time" name="check_in" value="{{ record.check_in or '' }}" step="1">
+                <input type="time" name="check_in" value="{{ record.check_in or '' }}" step="1" {% if not can_edit_attendance_fields %}disabled{% endif %}>
+                {% if not can_edit_attendance_fields %}
+                <p class="help-text">Only Super Admin can change check-in time.</p>
+                {% endif %}
 
                 <label>Check Out</label>
-                <input type="time" name="check_out" value="{{ record.check_out or '' }}" step="1">
+                <input type="time" name="check_out" value="{{ record.check_out or '' }}" step="1" {% if not can_edit_attendance_fields %}disabled{% endif %}>
+                {% if not can_edit_attendance_fields %}
+                <p class="help-text">Only Super Admin can change check-out time.</p>
+                {% endif %}
 
                 <label>Status</label>
-                <select name="status">
+                <select name="status" {% if not can_edit_attendance_fields %}disabled{% endif %}>
                     <option value="Present" {% if record.status == "Present" %}selected{% endif %}>Present</option>
                     <option value="Late" {% if record.status == "Late" %}selected{% endif %}>Late</option>
                     <option value="Absent" {% if record.status == "Absent" %}selected{% endif %}>Absent</option>
                 </select>
+                {% if not can_edit_attendance_fields %}
+                <p class="help-text">Only Super Admin can change attendance status.</p>
+                {% endif %}
 
                 <label>Edit Reason</label>
-                <select name="reason" required>
-                    <option value="" disabled {% if not record.edit_reason %}selected{% endif %}>Select a reason</option>
-                    {% for reason in edit_reasons %}
-                    <option value="{{ reason }}" {% if record.edit_reason == reason %}selected{% endif %}>{{ reason }}</option>
-                    {% endfor %}
-                </select>
+                <textarea name="reason" rows="4" placeholder="Explain why this record needs correction." required>{{ record.edit_reason or '' }}</textarea>
+                <p class="help-text">Reason is required and cannot be none, n/a, or blank.</p>
 
                 <button type="submit">Update Attendance</button>
                 <a class="btn btn-danger" href="/attendance_records">Cancel</a>

@@ -49,7 +49,15 @@
                         </dd>
                     </div>
                 </dl>
-                <button id="captureButton" type="button" data-register-face-url="{{ url_for('superadmin.api_register_face', user_id=user.id) }}">{{ "Re-register Face" if face_registered else "Capture Face" }}</button>
+                <button
+                    id="captureButton"
+                    type="button"
+                    data-register-face-url="{{ url_for('superadmin.api_register_face', user_id=user.id) }}"
+                    data-detect-face-url="{{ url_for('superadmin.api_detect_face') }}"
+                    disabled
+                >
+                    {{ "Re-register Face" if face_registered else "Capture Face" }}
+                </button>
             </aside>
         </div>
     </div>

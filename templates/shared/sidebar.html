@@ -10,6 +10,7 @@
     {% if session.get("role") == "superadmin" %}
     <a href="/superadmin" data-icon="D"><span>Dashboard</span></a>
     <a href="/employees" data-icon="E"><span>Manage Employees</span></a>
+    <a href="/attendance_records" data-icon="A"><span>Attendance Records</span></a>
     <a href="/superadmin/face_registration" data-icon="F"><span>Face Registration</span></a>
     <a href="/work_settings" data-icon="W"><span>Work Schedule</span></a>
     {% elif session.get("role") == "hr" %}

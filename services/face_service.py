@@ -98,6 +98,15 @@ def get_face_encoding_from_image_data(image_data):
     return encodings[0], "Face captured"
 
 
+def detect_face_from_image_data(image_data):
+    encoding, message = get_face_encoding_from_image_data(image_data)
+
+    if encoding is None:
+        return False, message
+
+    return True, "Face detected"
+
+
 def match_registered_face_from_image_data(image_data):
     ensure_face_folder()
     current_encoding, message = get_face_encoding_from_image_data(image_data)

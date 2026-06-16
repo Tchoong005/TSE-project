@@ -15,7 +15,12 @@ from database import (
     update_work_settings,
 )
 from services.attendance_service import clear_attendance_records
-from services.face_service import attach_face_registration_status, register_face_from_image_data, user_has_face_profile
+from services.face_service import (
+    attach_face_registration_status,
+    detect_face_from_image_data,
+    register_face_from_image_data,
+    user_has_face_profile,
+)
 from services.otp_service import OTP_EXPIRY_SECONDS, generate_otp, send_otp_email
 from utils.security import hash_password
 from utils.validators import (
@@ -434,5 +439,19 @@ def api_register_face(user_id):
 
     return jsonify({
         "success": success,
+        "message": message,
+    })
+
+
+@superadmin_bp.route("/api/detect_face", methods=["POST"])
+def api_detect_face():
+    if session.get("role") not in ["superadmin", "hr"]:
+        return jsonify({"success": False, "message": "Please login again"}), 401
+
+    data = request.get_json(silent=True) or {}
+    detected, message = detect_face_from_image_data(data.get("image"))
+
+    return jsonify({
+        "success": detected,
         "message": message,
     })
