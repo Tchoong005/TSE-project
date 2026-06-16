@@ -10,7 +10,10 @@ import numpy as np
 from config import FACE_FOLDER
 from database import create_face_profile, get_latest_face_profiles_by_user, get_user_by_id, get_users_by_roles
 
-FACE_MATCH_TOLERANCE = 0.6
+FACE_MATCH_TOLERANCE = 0.5
+FACE_MATCH_MARGIN = 0.08
+MIN_STRICT_FACE_RATIO = 0.22
+MAX_STRICT_FACE_RATIO = 0.86
 
 
 def ensure_face_folder():
@@ -71,7 +74,7 @@ def verify_face(user_id):
     return False, "Face verification failed"
 
 
-def get_face_encoding_from_image_data(image_data):
+def decode_image_data(image_data):
     if not image_data:
         return None, "No image data received"
 
@@ -89,17 +92,105 @@ def get_face_encoding_from_image_data(image_data):
     if frame is None:
         return None, "Unable to read captured image"
 
+    return frame, "Image decoded"
+
+
+def face_is_complete_and_centered(face_location, landmarks, frame_shape):
+    top, right, bottom, left = face_location
+    frame_height, frame_width = frame_shape[:2]
+    face_width = right - left
+    face_height = bottom - top
+
+    if face_width <= 0 or face_height <= 0:
+        return False
+
+    width_ratio = face_width / frame_width
+    height_ratio = face_height / frame_height
+
+    if width_ratio < MIN_STRICT_FACE_RATIO or height_ratio < MIN_STRICT_FACE_RATIO:
+        return False
+
+    if width_ratio > MAX_STRICT_FACE_RATIO or height_ratio > MAX_STRICT_FACE_RATIO:
+        return False
+
+    margin_x = frame_width * 0.04
+    margin_y = frame_height * 0.04
+
+    if left <= margin_x or right >= frame_width - margin_x:
+        return False
+
+    if top <= margin_y or bottom >= frame_height - margin_y:
+        return False
+
+    required_features = ["left_eye", "right_eye", "nose_bridge", "top_lip", "bottom_lip"]
+
+    if not all(landmarks.get(feature) for feature in required_features):
+        return False
+
+    left_eye = np.mean(landmarks["left_eye"], axis=0)
+    right_eye = np.mean(landmarks["right_eye"], axis=0)
+    nose = np.mean(landmarks["nose_bridge"], axis=0)
+    mouth_points = landmarks["top_lip"] + landmarks["bottom_lip"]
+    mouth = np.mean(mouth_points, axis=0)
+
+    eye_distance = abs(right_eye[0] - left_eye[0])
+
+    if eye_distance < frame_width * 0.08:
+        return False
+
+    if abs(left_eye[1] - right_eye[1]) > eye_distance * 0.28:
+        return False
+
+    if not (left_eye[0] < nose[0] < right_eye[0]):
+        return False
+
+    if mouth[1] <= nose[1]:
+        return False
+
+    face_center_x = (left + right) / 2
+    face_center_y = (top + bottom) / 2
+    frame_center_x = frame_width / 2
+    frame_center_y = frame_height / 2
+
+    if abs(face_center_x - frame_center_x) > frame_width * 0.20:
+        return False
+
+    if abs(face_center_y - frame_center_y) > frame_height * 0.24:
+        return False
+
+    return True
+
+
+def get_face_encoding_from_image_data(image_data, strict=False):
+    frame, message = decode_image_data(image_data)
+
+    if frame is None:
+        return None, message
+
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    encodings = face_recognition.face_encodings(rgb)
+    locations = face_recognition.face_locations(rgb)
+
+    if len(locations) == 0:
+        return None, "No face detected"
+
+    if strict and len(locations) > 1:
+        return None, "Only one face must be inside the frame"
+
+    landmarks = face_recognition.face_landmarks(rgb, locations)
+
+    if strict and not face_is_complete_and_centered(locations[0], landmarks[0] if landmarks else {}, frame.shape):
+        return None, "Face must be fully inside the blue frame and facing the camera"
+
+    encodings = face_recognition.face_encodings(rgb, locations)
 
     if len(encodings) == 0:
-        return None, "No face detected"
+        return None, "Face must face the camera clearly"
 
     return encodings[0], "Face captured"
 
 
 def detect_face_from_image_data(image_data):
-    encoding, message = get_face_encoding_from_image_data(image_data)
+    encoding, message = get_face_encoding_from_image_data(image_data, strict=True)
 
     if encoding is None:
         return False, message
@@ -109,7 +200,7 @@ def detect_face_from_image_data(image_data):
 
 def match_registered_face_from_image_data(image_data):
     ensure_face_folder()
-    current_encoding, message = get_face_encoding_from_image_data(image_data)
+    current_encoding, message = get_face_encoding_from_image_data(image_data, strict=True)
 
     if current_encoding is None:
         return None, message
@@ -117,6 +208,7 @@ def match_registered_face_from_image_data(image_data):
     users = get_users_by_roles(["hr", "employee"])
     best_match = None
     best_distance = None
+    second_best_distance = None
     registered_count = 0
 
     for user in users:
@@ -136,16 +228,22 @@ def match_registered_face_from_image_data(image_data):
         )[0]
 
         if best_distance is None or distance < best_distance:
+            second_best_distance = best_distance
             best_distance = distance
             best_match = user
+        elif second_best_distance is None or distance < second_best_distance:
+            second_best_distance = distance
 
     if registered_count == 0:
         return None, "No registered face profiles found"
 
     if best_match and best_distance <= FACE_MATCH_TOLERANCE:
+        if second_best_distance is not None and second_best_distance - best_distance < FACE_MATCH_MARGIN:
+            return None, "Face match is not confident. Move closer and face the camera"
+
         return best_match, "Face verified successfully"
 
-    return None, "Face not recognised"
+    return None, "Face not recognised clearly. Move closer and face the camera"
 
 
 def user_has_face_profile(user_id):
@@ -225,7 +323,7 @@ def register_face_from_image_data(user_id, image_data, registered_by):
     if user["role"] == "superadmin":
         return False, "Super Admin does not need face registration"
 
-    encoding, message = get_face_encoding_from_image_data(image_data)
+    encoding, message = get_face_encoding_from_image_data(image_data, strict=True)
 
     if encoding is None:
         return False, message

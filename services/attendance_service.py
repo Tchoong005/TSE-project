@@ -3,6 +3,8 @@ from datetime import datetime
 from database import get_db_connection, get_user_by_id, get_work_settings
 from services.face_service import match_registered_face_from_image_data, verify_face
 
+ATTENDANCE_WINDOW_MINUTES = 30
+
 
 def get_schedule():
     settings = get_work_settings()
@@ -11,11 +13,15 @@ def get_schedule():
         return {
             "start_time": "08:00",
             "end_time": "17:00",
+            "check_in_open_time": "07:30",
+            "check_out_close_time": "17:30",
         }
 
     return {
         "start_time": settings["start_time"],
         "end_time": settings["end_time"],
+        "check_in_open_time": get_check_in_open_time(settings["start_time"]),
+        "check_out_close_time": get_check_out_close_time(settings["end_time"]),
     }
 
 
@@ -27,6 +33,29 @@ def time_to_minutes(value):
     return (int(parts[0]) * 60) + int(parts[1])
 
 
+def format_minutes(value):
+    value = value % (24 * 60)
+    return f"{value // 60:02d}:{value % 60:02d}"
+
+
+def get_check_in_open_time(start_time):
+    start_minutes = time_to_minutes(start_time)
+
+    if start_minutes is None:
+        return None
+
+    return format_minutes(start_minutes - ATTENDANCE_WINDOW_MINUTES)
+
+
+def get_check_out_close_time(end_time):
+    end_minutes = time_to_minutes(end_time)
+
+    if end_minutes is None:
+        return None
+
+    return format_minutes(end_minutes + ATTENDANCE_WINDOW_MINUTES)
+
+
 def is_late(check_in, start_time):
     check_in_minutes = time_to_minutes(check_in)
     start_minutes = time_to_minutes(start_time)
@@ -36,7 +65,38 @@ def is_late(check_in, start_time):
 def is_overtime(check_out, end_time):
     check_out_minutes = time_to_minutes(check_out)
     end_minutes = time_to_minutes(end_time)
-    return check_out_minutes is not None and end_minutes is not None and check_out_minutes > end_minutes
+    overtime_minutes = end_minutes + ATTENDANCE_WINDOW_MINUTES if end_minutes is not None else None
+    return check_out_minutes is not None and overtime_minutes is not None and check_out_minutes > overtime_minutes
+
+
+def is_before_check_in_window(check_in, start_time):
+    check_in_minutes = time_to_minutes(check_in)
+    start_minutes = time_to_minutes(start_time)
+
+    if check_in_minutes is None or start_minutes is None:
+        return False
+
+    return check_in_minutes < start_minutes - ATTENDANCE_WINDOW_MINUTES
+
+
+def is_before_check_out_window(check_out, end_time):
+    check_out_minutes = time_to_minutes(check_out)
+    end_minutes = time_to_minutes(end_time)
+
+    if check_out_minutes is None or end_minutes is None:
+        return False
+
+    return check_out_minutes < end_minutes
+
+
+def is_after_check_out_window(check_out, end_time):
+    check_out_minutes = time_to_minutes(check_out)
+    end_minutes = time_to_minutes(end_time)
+
+    if check_out_minutes is None or end_minutes is None:
+        return False
+
+    return check_out_minutes > end_minutes + ATTENDANCE_WINDOW_MINUTES
 
 
 def get_employee_attendance(user_id):
@@ -211,6 +271,10 @@ def record_check_in(user_id):
         return False, "You have already checked in today"
 
     schedule = get_schedule()
+
+    if is_before_check_in_window(now, schedule["start_time"]):
+        return False, f"Check-in opens at {schedule['check_in_open_time']}"
+
     status = "Late" if is_late(now, schedule["start_time"]) else "Present"
 
     create_check_in(user_id, today, now, status)
@@ -240,8 +304,12 @@ def record_check_out(user_id):
     if existing["check_out"]:
         return False, "You have already checked out today"
 
-    update_check_out(user_id, today, now)
     schedule = get_schedule()
+
+    if is_before_check_out_window(now, schedule["end_time"]):
+        return False, f"Check-out opens at {schedule['end_time']}"
+
+    update_check_out(user_id, today, now)
 
     if is_overtime(now, schedule["end_time"]):
         return True, "Checked out successfully - Overtime"
@@ -252,16 +320,15 @@ def record_check_out(user_id):
 def record_auto_attendance(user_id):
     schedule = get_schedule()
     now = datetime.now().strftime("%H:%M:%S")
-
-    if time_to_minutes(now) >= time_to_minutes(schedule["end_time"]):
-        success, message = record_check_out(user_id)
-        return success, message, "Check Out"
-
     today = datetime.now().strftime("%Y-%m-%d")
     existing = get_attendance_by_user_and_date(user_id, today)
 
     if existing:
-        return False, "You have already checked in today", "Check In"
+        success, message = record_check_out(user_id)
+        return success, message, "Check Out"
+
+    if time_to_minutes(now) >= time_to_minutes(schedule["end_time"]):
+        return False, "Please check in before checking out", "Check Out"
 
     success, message = record_check_in(user_id)
     return success, message, "Check In"
